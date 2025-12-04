@@ -184,6 +184,99 @@ adk web . --port 8006
 
 ---
 
+## Day 3 - December 4, 2025 🔄 In Progress
+
+### Challenge: Upgrade to Gemini 3 Pro with Advanced Features
+
+**Goal:** Upgrade agent to newer Gemini model and explore advanced features (Live API, Computer Use, Real-time Streaming)
+
+**What We Accomplished:**
+1. ✅ Reauthenticated after overnight credential expiration
+2. ✅ Updated agent instructions with detailed requirements
+   - "Cite your sources. Always provide answers clearly based on search results"
+   - Added custom Geordie accent instruction
+3. ✅ Investigated model availability in Vertex AI
+4. ✅ Discovered authentication and model access mechanisms
+5. ✅ Learned about server caching and restart procedures
+
+**What We Discovered (NOT Fixed Yet):**
+- ❌ `gemini-3-pro-preview` model is NOT available in your `advent-of-agents` project
+- ✅ Agent IS reading your new YAML configuration (Geordie accent proves it!)
+- ✅ Agent IS working with fallback model: `gemini-2.0-flash`
+- The model name format conversions (simple name → full resource path)
+
+**Model Investigation:**
+- Checked Google Cloud Console → Vertex AI → Model Garden
+- Found that `gemini-3-pro-preview` exists in Vertex AI BUT your project doesn't have access
+- Model Garden shows: "Provisioned Throughput available" but model returns 404 when used
+
+**Key Learnings:**
+- **Server Caching:** Changes to YAML don't immediately take effect - server must be fully restarted
+  - Simple `Ctrl+C` might not be enough
+  - Need to kill ALL Python processes with: `Get-Process | Where-Object {$_.ProcessName -like "*python*"} | Stop-Process -Force`
+- **Model Fallback Behavior:** When requested model doesn't exist, ADK appears to fall back to `gemini-2.0-flash`
+  - Evidence: YAML says `gemini-3-pro-preview` but Events tab shows `gemini-2.0-flash`
+  - But new instructions ARE applied (Geordie accent working!)
+- **Configuration Format:** ADK converts simple model names to full resource paths:
+  - Input: `gemini-3-pro-preview`
+  - Converted to: `projects/advent-of-agents/locations/us-central1/publishers/google/models/gemini-3-pro-preview`
+- **Coaching is Better Than Guessing:** Had to actually search for fallback code rather than assuming
+
+**Commands Learned:**
+```powershell
+# Kill all Python processes
+Get-Process | Where-Object {$_.ProcessName -like "*python*"} | Stop-Process -Force
+
+# Complete fresh restart
+cd C:\git\a-s-p
+& "C:\Users\markc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\Scripts\adk.exe" web . --port 8006
+
+# Access web UI
+http://localhost:8006
+```
+
+**Current Agent Configuration:**
+```yaml
+name: root_agent
+description: A helpful assistant for user questions.
+instruction: Answer user questions to the best of your knowledge and cite your sources. Always provide answers clearly based on search results. Answer with a Geordie accent.
+model: gemini-3-pro-preview
+tools:
+  - name: google_search
+```
+
+**Challenges Encountered:**
+1. **Model Not Available:** Primary blocker - `gemini-3-pro-preview` not accessible in project
+2. **Server Caching:** Changes to YAML not immediately reflected - needed hard restarts
+3. **Ambiguous Behavior:** Unclear why agent responds with new instructions but uses old model
+4. **Configuration Format Confusion:** Didn't initially understand ADK's model name conversion
+
+**What We Need To Do Next:**
+1. **Request Access** to Gemini 3 Pro model in Google Cloud project (might require project admin action)
+   OR
+2. **Find Available Model:** Determine which Gemini models your project DOES have access to
+3. **Update YAML:** Use an available model instead of `gemini-3-pro-preview`
+
+**Why Day 3 is Blocked:**
+- Video tutorial uses `gemini-3-pro-preview` (or similar Gemini 3 model)
+- Your project doesn't have access to that model
+- Agent works, but with older model than intended
+- Day 3 specifically focuses on Gemini 3 Pro features
+
+**Status:** Day 3 PARTIALLY COMPLETE
+- ✅ Configuration and instructions updated
+- ✅ Server restart procedures learned
+- ✅ Model availability investigation done
+- ❌ Model access issue remains unresolved
+- ⏸️ Advanced features testing blocked by model availability
+
+**Next Session Action Items:**
+1. Check Google Cloud Console for available Gemini models
+2. Either request Gemini 3 Pro access OR switch to available model
+3. Continue with Day 3 features once model access is resolved
+
+---
+
 ## Resources & Quick Reference
 
 ### Important Commands
