@@ -184,7 +184,7 @@ adk web . --port 8006
 
 ---
 
-## Day 3 - December 4, 2025 🔄 In Progress
+## Day 3 - December 4, 2025 ✅
 
 ### Challenge: Upgrade to Gemini 3 Pro with Advanced Features
 
@@ -196,14 +196,15 @@ adk web . --port 8006
    - "Cite your sources. Always provide answers clearly based on search results"
    - Added custom Geordie accent instruction
 3. ✅ Investigated model availability in Vertex AI
-4. ✅ Discovered authentication and model access mechanisms
-5. ✅ Learned about server caching and restart procedures
+4. ✅ **FIXED: Discovered `gemini-3-pro-preview` works with `location=global`**
+5. ✅ Confirmed ADK automatically handles publisher path conversion
+6. ✅ Verified new agent configuration working with Gemini 3 Pro
 
-**What We Discovered (NOT Fixed Yet):**
-- ❌ `gemini-3-pro-preview` model is NOT available in your `advent-of-agents` project
-- ✅ Agent IS reading your new YAML configuration (Geordie accent proves it!)
-- ✅ Agent IS working with fallback model: `gemini-2.0-flash`
-- The model name format conversions (simple name → full resource path)
+**What We Discovered (AND FIXED):**
+- ✅ `gemini-3-pro-preview` requires `GOOGLE_CLOUD_LOCATION=global` (not `us-central1`)
+- ✅ Agent now reads YAML config correctly (Geordie accent verified!)
+- ✅ Tested and working with Gemini 3 Pro model
+- ✅ ADK converts simple model names to full resource paths automatically
 
 **Model Investigation:**
 - Checked Google Cloud Console → Vertex AI → Model Garden
@@ -211,16 +212,11 @@ adk web . --port 8006
 - Model Garden shows: "Provisioned Throughput available" but model returns 404 when used
 
 **Key Learnings:**
-- **Server Caching:** Changes to YAML don't immediately take effect - server must be fully restarted
-  - Simple `Ctrl+C` might not be enough
-  - Need to kill ALL Python processes with: `Get-Process | Where-Object {$_.ProcessName -like "*python*"} | Stop-Process -Force`
-- **Model Fallback Behavior:** When requested model doesn't exist, ADK appears to fall back to `gemini-2.0-flash`
-  - Evidence: YAML says `gemini-3-pro-preview` but Events tab shows `gemini-2.0-flash`
-  - But new instructions ARE applied (Geordie accent working!)
-- **Configuration Format:** ADK converts simple model names to full resource paths:
-  - Input: `gemini-3-pro-preview`
-  - Converted to: `projects/advent-of-agents/locations/us-central1/publishers/google/models/gemini-3-pro-preview`
-- **Coaching is Better Than Guessing:** Had to actually search for fallback code rather than assuming
+- **Region Matters:** Preview model only works with `GOOGLE_CLOUD_LOCATION=global`
+- **Server Caching:** Full restart still required to pick up YAML changes
+- **Model Name Format:** Use short name; ADK builds the full publisher path automatically
+- **Configuration Verification:** Check Events tab in web UI to confirm model in use
+- **Official Samples Help:** Matched Python SDK sample to understand location/model requirements
 
 **Commands Learned:**
 ```powershell
@@ -245,35 +241,18 @@ tools:
   - name: google_search
 ```
 
-**Challenges Encountered:**
-1. **Model Not Available:** Primary blocker - `gemini-3-pro-preview` not accessible in project
-2. **Server Caching:** Changes to YAML not immediately reflected - needed hard restarts
-3. **Ambiguous Behavior:** Unclear why agent responds with new instructions but uses old model
-4. **Configuration Format Confusion:** Didn't initially understand ADK's model name conversion
+**Environment (CORRECTED):**
+```env
+GOOGLE_GENAI_USE_VERTEXAI=1
+GOOGLE_CLOUD_PROJECT=advent-of-agents
+GOOGLE_CLOUD_LOCATION=global
+```
 
-**What We Need To Do Next:**
-1. **Request Access** to Gemini 3 Pro model in Google Cloud project (might require project admin action)
-   OR
-2. **Find Available Model:** Determine which Gemini models your project DOES have access to
-3. **Update YAML:** Use an available model instead of `gemini-3-pro-preview`
-
-**Why Day 3 is Blocked:**
-- Video tutorial uses `gemini-3-pro-preview` (or similar Gemini 3 model)
-- Your project doesn't have access to that model
-- Agent works, but with older model than intended
-- Day 3 specifically focuses on Gemini 3 Pro features
-
-**Status:** Day 3 PARTIALLY COMPLETE
-- ✅ Configuration and instructions updated
-- ✅ Server restart procedures learned
-- ✅ Model availability investigation done
-- ❌ Model access issue remains unresolved
-- ⏸️ Advanced features testing blocked by model availability
-
-**Next Session Action Items:**
-1. Check Google Cloud Console for available Gemini models
-2. Either request Gemini 3 Pro access OR switch to available model
-3. Continue with Day 3 features once model access is resolved
+**Status:** Day 3 COMPLETE ✅
+- ✅ Model updated to Gemini 3 Pro
+- ✅ Region corrected to `global` (was `us-central1`)
+- ✅ Agent working with new model and instructions
+- ✅ Google Search tool integrated
 
 ---
 
@@ -323,4 +302,146 @@ gcloud config list
 
 ---
 
-*Last Updated: December 3, 2025*
+## Day 4 - December 5, 2025 🔄 In Progress
+
+### Challenge: Source-Based Deployment with Agent Engine
+
+**Goal:** Deploy source directly to Agent Engine using the new deployment flow.
+
+**What We Accomplished:**
+1. ✅ Enabled Windows long paths in registry; rebooted
+2. ✅ Fixed uv/uvx installation issues (antivirus blocking)
+3. ✅ Installed `uv` package manager (v0.9.15) into `C:\git\a-s-p`
+4. ✅ Installed `agent-starter-pack` package locally
+5. ✅ Created new project `C:\git\agent-4` via `uv tool run agent-starter-pack -- create agent-4 -a adk_base -d agent_engine -y`
+   - Clean scaffold with Agent Engine deployment target
+   - Automatic GCP project verification (advent-of-agents confirmed)
+6. ✅ Uninstalled/reinstalled Chocolatey (admin PowerShell)
+7. ✅ Installed GNU Make v4.4.1 via Chocolatey
+8. ✅ Exported dependencies: `uv export` → `app/app_utils/.requirements.txt`
+9. ✅ Verified deployment tooling available
+
+**Key Learnings (Day 4):**
+- **Windows Long Paths:** Needed registry fix + reboot for agent-starter-pack Jinja templating
+- **Separate Projects:** Keep `agent-4` separate from `a-s-p` repo to avoid template collisions
+- **uv Tool Management:** `uv tool run` lets you run CLIs without polluting your environment
+- **Chocolatey + Admin:** Some package managers (Chocolatey) require elevated PowerShell
+- **Requirements Export:** `uv export` generates the exact dependency list for deployment
+
+**Final Deployment:**
+- ✅ Reauthenticated: `gcloud auth application-default login`
+- ✅ Deployed: `uv run -m app.app_utils.deploy --source-packages=./app --entrypoint-module=app.agent_engine_app --entrypoint-object=agent_engine --requirements-file=app/app_utils/.requirements.txt`
+- ✅ Agent Engine ID: 3999649467895644160
+- ✅ Service Account: service-233209475586@gcp-sa-aiplatform-re.iam.gserviceaccount.com
+- ✅ Console Playground: https://console.cloud.google.com/vertex-ai/agents/locations/us-central1/agent-engines/3999649467895644160/playground
+
+**Status:** Day 4 COMPLETE ✅
+- All tooling installed and working
+- agent-4 deployed to Vertex AI Agent Engine
+- Telemetry enabled (GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true)
+- Production observability automatically provisioned
+
+---
+
+## Day 5 - December 8, 2025 ✅
+
+### Challenge: Production Observability
+
+**Goal:** Verify zero-config observability infrastructure automatically provisioned during deployment
+
+**What We Accomplished:**
+1. ✅ Verified Cloud Trace captures agent execution traces, LLM calls, and latency
+2. ✅ Confirmed Log Analytics and Log Buckets are collecting agent logs
+3. ✅ Checked BigQuery dataset for agent execution logs with custom views
+4. ✅ Tested agent in Console Playground to generate telemetry data
+
+**Key Learnings:**
+- **Zero-Config Observability:** Agent Starter Pack auto-provisions:
+  - Cloud Trace for execution traces with latency breakdown
+  - Log Analytics + Log Buckets with custom retention
+  - BigQuery Delta Lake with custom views for querying
+- **Already Enabled:** Telemetry automatically configured during Day 4 deployment:
+  - `GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY=true`
+  - `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`
+- **Terraform Provisioned:** All infrastructure deployed automatically
+- **Privacy by Design:** Sensitive content stored in GCS, not logs
+
+**Verification:**
+- Console Playground: https://console.cloud.google.com/vertex-ai/agents/locations/us-central1/agent-engines/3999649467895644160/playground
+- Cloud Trace: https://console.cloud.google.com/traces/list?project=advent-of-agents
+- Logs: https://console.cloud.google.com/logs/query?project=advent-of-agents
+- BigQuery: https://console.cloud.google.com/bigquery?project=advent-of-agents
+
+**Status:** Day 5 COMPLETE ✅
+- Observability was automatic from Day 4 deployment
+- All traces, logs, and analytics verified working
+
+---
+
+## Day 6 - December 8, 2025 ✅
+
+### Challenge: IDE Integration
+
+**Goal:** Verify ADK works in multiple IDEs without configuration
+
+**What We Learned:**
+1. ✅ **IDE = Integrated Development Environment** - Super-powered text editor for coding
+   - Text editor with syntax highlighting and auto-completion
+   - Terminal for running commands
+   - File explorer for browsing project structure
+   - Debugging tools for finding errors
+   
+2. ✅ **VS Code is an IDE** - What we've been using this whole time!
+   - Successfully editing YAML files
+   - Running commands in integrated terminal
+   - Browsing project files in sidebar
+   
+3. ✅ **IDE Magnet Context** - Agent Starter Pack works everywhere:
+   - No special IDE setup required
+   - ADK commands work from any IDE terminal
+   - Configuration files get syntax highlighting automatically
+   
+4. ✅ **Other IDE Options:**
+   - **Cursor** - AI-powered IDE with built-in coding assistant
+   - **Firebase Studio** - Google's web-based IDE (browser-based)
+   - **Gemini CLI** - Command-line interface for Gemini
+   - **PyCharm** - Python-focused IDE
+
+**Key Insight - llms.txt for Technical SEO:**
+- Discovered https://llmstxt.org/ - standard for making documentation LLM-readable
+- Similar to robots.txt but for AI agents/LLMs
+- Could become essential for technical SEO as AI search becomes dominant
+- Makes documentation accessible to AI tools without custom scraping
+
+**Status:** Day 6 COMPLETE ✅
+- Verified VS Code works seamlessly with ADK
+- No configuration required - everything just works
+- Understanding of IDE concept and tooling options
+
+---
+
+## Summary - December 8, 2025
+
+**Completed This Session:**
+- ✅ Day 4: Deployed agent-4 to Vertex AI Agent Engine
+- ✅ Day 5: Verified production observability (Cloud Trace, Logs, BigQuery)
+- ✅ Day 6: IDE integration verified (VS Code working perfectly)
+
+**Key Learnings:**
+- Observability is zero-config with Agent Starter Pack
+- IDE support works out-of-the-box (no setup needed)
+- llms.txt could become critical for technical SEO with AI search
+
+**Installed Tools Summary:**
+- Python 3.13.9 ✅
+- Google Cloud SDK ✅
+- Agent Starter Pack ✅
+- uv package manager v0.9.15 ✅
+- Chocolatey v2.6.0 ✅
+- GNU Make 4.4.1 ✅
+- google-adk v1.19.0 ✅
+- Vertex AI SDK ✅
+
+---
+
+*Last Updated: December 8, 2025*
