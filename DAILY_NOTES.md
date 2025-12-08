@@ -420,6 +420,39 @@ gcloud config list
 
 ---
 
+## Day 7 - December 8, 2025 ✅
+
+### Challenge: Code Execution (Retail AI Location Strategy sample)
+
+**What We Accomplished:**
+1. ✅ Cloned `adk-samples` retail-ai-location-strategy project and installed deps with `uv sync` (Windows PowerShell)
+2. ✅ Fixed missing frontend files (`lib/summaryHelpers.ts`, `lib/parseCodeBlocks.ts`) so Next.js build succeeds
+3. ✅ Started three services: ADK dev UI (8501), FastAPI backend with `ag-ui-adk` (8000), Next.js frontend (3000)
+4. ✅ Switched to Vertex AI (`advent-of-agents` project) after free-tier Gemini API quota exhaustion
+5. ✅ Ran full 7-stage pipeline end-to-end for prompt “coffee shop in Indiranagar, Bangalore”
+6. ✅ Verified Gap Analysis stage executed generated Python code (code extraction ~6.6k chars)
+
+**What We Didn’t Complete / Limitations:**
+- 🚫 Infographic stage failed: model `gemini-3-pro-image-preview` not available in Vertex AI (404)
+- ⚠️ Occasional AG-UI Inspector modal pops up (debug overlay); closing it shows results normally
+
+**Deviations from Tutorial:**
+- Had to manually create missing frontend helper files (not present in repo)
+- Used PowerShell + `uv sync` instead of Makefile (Make expects bash; Windows path issues)
+- Moved `.env` into `app/.env` and switched project to `advent-of-agents` for Vertex AI; restarted backend to pick up env
+- Installed `ag-ui-adk` manually in project venv to satisfy backend import
+
+**Key Learnings:**
+- Vertex AI vs. Gemini API: free-tier quota errors disappear after switching to Vertex AI project
+- Backend reads env from `app/.env`; restarting is required after edits
+- Frontend imports must match actual files; missing helpers break Next.js build
+- Model availability matters: some image models aren’t yet published to Vertex AI
+
+**Status:** Day 7 COMPLETE ✅
+- Code execution verified in Gap Analysis stage
+- Full pipeline runs; only infographic model unavailable
+
+
 ## Summary - December 8, 2025
 
 **Completed This Session:**
