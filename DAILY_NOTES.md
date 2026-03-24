@@ -452,8 +452,135 @@ gcloud config list
 - Code execution verified in Gap Analysis stage
 - Full pipeline runs; only infographic model unavailable
 
+---
 
-## Summary - December 8, 2025
+## Day 8 - December 9, 2025 ✅
+
+### Challenge: Context Management (Stop Stuffing Spaghetti Into Your Agent's LLM)
+
+**The Problem (Old Way):**
+- Append all history/data into one giant prompt string
+- "Lost in the middle" hallucinations (LLM forgets important info)
+- Latency spirals as context window grows
+- No separation of concerns (static policies mixed with dynamic user input)
+
+**The Solution (ADK Way - 3-Layer Architecture):**
+
+**Layer 1: Static Policy Header** (`app_startup.py`)
+- Unchanging compliance rules, JSON schemas, safety guardrails
+- Cached by ADK for 1 hour → saves tokens and latency
+- Wrapped in `ContextCacheConfig` with TTL, refresh intervals, min token thresholds
+- Example: "You are a strict policy assistant... Follow this JSON schema..."
+
+**Layer 2: Dynamic Turn Instructions** (`steering.py`)
+- Built fresh per-request based on user intent
+- Composed programmatically, not hardcoded
+- Runtime knobs: style (concise/detailed), max citations, tenant filters, corrective feedback
+- `SteeringInputs` dataclass + `build_turn_instruction()` function
+- Example: "Goal: Summarize ACME-42; Style: crisp; Max citations: 2"
+
+**Layer 3: Chat Handler** (`chat_handler.py`)
+- Intent router detects user goal (summarize/compare/list_controls/answer)
+- Maps intent to specific goal
+- Fetches session flags (style, max_citations, tenant_hint)
+- Builds turn instruction by merging static + dynamic contexts
+- Runs agent with exactly what it needs—nothing more, nothing less
+
+**What We Accomplished:**
+1. ✅ Created agent-8 scaffold with three-layer architecture
+2. ✅ Implemented static policy header with context caching config
+3. ✅ Implemented dynamic turn instruction builder with dataclass
+4. ✅ Implemented intent router and chat handler with session management
+5. ✅ Tested intent routing: all 4 intents correctly detected ✓
+6. ✅ Tested turn instruction generation: goals, styles, tenant hints, corrections work ✓
+
+**How It Works (Real Example):**
+
+User says: "Summarize ACME-42 for EU employees"
+↓
+1. **Intent Router** detects "summarize" → goal = "Summarize ACME-42 in plain English"
+2. **Steering Engine** builds turn instruction with:
+   - Goal: Summarize ACME-42
+   - Style: concise (default)
+   - Max citations: 2 (default)
+   - Tenant: EU employees only
+3. **Agent receives**:
+   - Static: compliance rules, JSON schema, safety guardrails (cached)
+   - Dynamic: Turn-specific goal, style, tenant filter
+4. **Agent responds** with exactly what's needed—no context bloat
+
+**Key Learnings:**
+- **Separation of concerns:** Static (unchanging) vs. Dynamic (per-request) are legally/technically distinct
+- **Context caching efficiency:** Heavy system headers cached → slash costs and latency
+- **Granular control:** Steering knobs (style, citations, tenant filters) let you customize per-request without duplicating instructions
+- **Session state management:** Track user preferences, validation errors, corrections across turns
+
+**Test Results:**
+```
+✓ Summarize ACME-42 → Goal: "Summarize ACME-42 in plain English"
+✓ List all controls → Goal: "List mandatory controls from ACME-42..."
+✓ Compare to ISO → Goal: "Compare ACME-42 to ISO 27001..."
+✓ Generic question → Goal: "Answer the user directly"
+
+✓ Scenario 1: Basic (style=concise, max_cites=2)
+✓ Scenario 2: Detailed with tenant filter (style=detailed, max_cites=3, tenant=EU)
+✓ Scenario 3: Correction loop (corrective="Include confidence score")
+```
+
+**Project Structure:**
+```
+C:\git\agent-8/
+├── .env                        # Vertex AI config
+├── app/
+│   ├── __init__.py
+│   ├── app_startup.py          # Static policy + ContextCacheConfig + App
+│   ├── steering.py             # SteeringInputs + build_turn_instruction()
+│   ├── chat_handler.py         # Intent router + chat() function + session store
+│   └── test_context.py         # Tests (all passing ✓)
+```
+
+**What Actually Worked:**
+- ✅ Python code patterns implemented (steering, intent routing, chat handler)
+- ✅ Unit tests passed (4/4 intents detected, 3/3 turn instruction scenarios)
+- ✅ Demonstrated the concept through code
+
+**What Didn't Work:**
+- ❌ Failed to integrate Python context management into live ADK agent
+- ❌ Multiple failed attempts to load agent in ADK web UI (module import errors, missing model config)
+- ❌ Confusion between Python-based agents vs YAML-based agents vs hybrid approaches
+
+**What I Actually Learned (The Truth):**
+
+1. **The Concept is Clear:** Day 8's three-layer architecture makes sense:
+   - Static policy (cached, unchanging)
+   - Dynamic turn instructions (built per-request)
+   - Intent routing (detects user goal)
+
+2. **Implementation is Complex:** Integrating this pattern into ADK is harder than Days 2-4's simple YAML:
+   - YAML agents (my_agent, agent-4) just worked
+   - Python agents require proper module structure, imports, App setup
+   - Mixed confusion between approaches led to hacking/patching
+
+3. **Development Process Broke Down:**
+   - Started fresh without using patterns from previous days
+   - Hit multiple import/configuration errors
+   - Attempted fixes without understanding root cause
+   - Lost track of "what actually works" vs "what we're trying"
+
+4. **What I Should Have Done:**
+   - Stuck with YAML agent approach (proven to work)
+   - Created reference Python files as documentation only
+   - Not attempted live integration without clear plan
+
+**Actual Status:** Day 8 PARTIAL ✅
+- ✅ Concept understood through code examples
+- ✅ Unit tests prove the logic works
+- ❌ Live agent integration failed
+- 📚 Python reference code exists showing the pattern
+
+**Key Takeaway:** Understanding the architecture is more valuable than having a working live demo. The unit tests prove the pattern works. Production systems would use this pattern, but it requires more scaffolding than we built today.
+
+---
 
 **Completed This Session:**
 - ✅ Day 4: Deployed agent-4 to Vertex AI Agent Engine
